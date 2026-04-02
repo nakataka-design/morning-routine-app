@@ -1,0 +1,1128 @@
+/* ───────────────────────────────────────
+   リセット & 基本
+─────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+:root {
+  --hh: 72px;
+  --gap: 10px;
+  --r: 20px;
+  --font: 'Hiragino Kaku Gothic ProN', 'Meiryo', 'Yu Gothic', system-ui, sans-serif;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  background: #1a1a2e;
+}
+
+/* ───────────────────────────────────────
+   ヘッダー
+─────────────────────────────────────── */
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--hh);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 14px;
+  z-index: 50;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+#hd-left { flex-shrink: 0; }
+
+#app-title {
+  font-size: clamp(1.1rem, 2.8vw, 1.7rem);
+  font-weight: 900;
+  color: #fff;
+  white-space: nowrap;
+}
+
+#hd-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#progress-label {
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  color: rgba(255,255,255,0.85);
+  font-weight: 700;
+}
+
+#done-count {
+  font-size: clamp(1.1rem, 2.8vw, 1.6rem);
+  font-weight: 900;
+  color: #FFD93D;
+}
+
+#progress-wrap {
+  height: 9px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD93D, #FF6B6B);
+  border-radius: 5px;
+  width: 0%;
+  transition: width 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#hd-right { flex-shrink: 0; }
+
+#clock {
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+
+/* ───────────────────────────────────────
+   メイン・グリッド
+─────────────────────────────────────── */
+#main {
+  position: fixed;
+  top: var(--hh);
+  left: 0; right: 0; bottom: 0;
+  padding: var(--gap);
+}
+
+#task-grid {
+  display: grid;
+  height: 100%;
+  gap: var(--gap);
+  /* 横向き：3列×2行 */
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+@media (orientation: portrait) {
+  #task-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
+}
+
+/* ───────────────────────────────────────
+   タスクカード
+─────────────────────────────────────── */
+.task-card {
+  background: linear-gradient(135deg, var(--c1, #aaa), var(--c2, #888));
+  border-radius: var(--r);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+  border: 2px solid rgba(255,255,255,0.28);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  padding: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 光沢レイヤー */
+.task-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 55%);
+  pointer-events: none;
+  border-radius: var(--r);
+}
+
+/* シマー（未完了カードのみ） */
+.task-card:not(.done)::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; bottom: 0;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0%   { left: -80%; }
+  50%  { left: 160%; }
+  100% { left: 160%; }
+}
+
+.task-card:active {
+  transform: scale(0.94);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+/* 完了状態 */
+.task-card.done {
+  filter: saturate(0.35) brightness(0.8);
+}
+
+/* バウンスアニメ */
+.task-card.bounce {
+  animation: cardBounce 0.38s ease;
+}
+
+@keyframes cardBounce {
+  0%   { transform: scale(1); }
+  28%  { transform: scale(0.87); }
+  62%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* 完了フラッシュ */
+.task-card.flash {
+  animation: cardFlash 0.55s ease;
+}
+
+@keyframes cardFlash {
+  0%   { filter: brightness(1); transform: scale(1); }
+  40%  { filter: brightness(1.9) saturate(1.6); transform: scale(1.07); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
+
+/* ── カード内コンテンツ ── */
+.card-emoji {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.task-card:active .card-emoji {
+  transform: scale(1.18) rotate(8deg);
+}
+
+.card-name {
+  font-size: clamp(1rem, 2.5vw, 1.55rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.card-time {
+  font-size: clamp(0.75rem, 1.6vw, 1rem);
+  color: rgba(255,255,255,0.82);
+  font-weight: 600;
+}
+
+.card-hint {
+  font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+  color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.18);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.card-done-badge {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+
+.card-done-label {
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  color: rgba(255,255,255,0.82);
+  font-weight: 700;
+}
+
+/* ───────────────────────────────────────
+   タイマーオーバーレイ
+─────────────────────────────────────── */
+#timer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.84);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: fadeIn 0.22s ease;
+}
+
+#timer-overlay.hidden { display: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#timer-card {
+  background: linear-gradient(135deg, var(--c1, #aaa), var(--c2, #888));
+  border-radius: 30px;
+  padding: clamp(20px, 4vh, 32px) clamp(24px, 5vw, 44px);
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+  border: 2px solid rgba(255,255,255,0.3);
+  min-width: 300px;
+  max-width: min(92vw, 480px);
+  max-height: 92vh;
+  animation: slideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(44px) scale(0.88); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+#timer-emoji {
+  font-size: clamp(2.8rem, 7vw, 4.5rem);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+#timer-name {
+  font-size: clamp(1.4rem, 3.5vw, 2.1rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.22);
+  margin-bottom: 14px;
+}
+
+#timer-circle-wrap {
+  position: relative;
+  width: clamp(140px, 24vw, 200px);
+  height: clamp(140px, 24vw, 200px);
+  margin: 0 auto 14px;
+}
+
+#timer-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 14px rgba(255,255,255,0.28));
+}
+
+#timer-arc {
+  /* transition は JS で制御 */
+  transition: stroke-dashoffset 0.95s linear;
+}
+
+#timer-arc.no-transition {
+  transition: none;
+}
+
+#timer-digits {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: clamp(2rem, 5vw, 2.9rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.22);
+  font-variant-numeric: tabular-nums;
+}
+
+#t-sep {
+  animation: blink 1s step-start infinite;
+  padding-bottom: 4px;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+#timer-digits.low {
+  color: #FFD93D;
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  75%      { transform: translateX(5px); }
+}
+
+#timer-msg {
+  font-size: clamp(1.05rem, 2.5vw, 1.4rem);
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  margin-bottom: 18px;
+  min-height: 1.7em;
+  transition: opacity 0.35s ease;
+}
+
+#timer-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#btn-done, #btn-back {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 50px;
+  font-family: var(--font);
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 52px;
+  transition: transform 0.14s ease;
+}
+
+#btn-done {
+  font-size: clamp(1.05rem, 2.8vw, 1.3rem);
+  background: #4CAF50;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(76,175,80,0.45);
+  padding: 14px 36px;
+}
+
+#btn-done:active { transform: scale(0.93); }
+
+#btn-back {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  background: rgba(0,0,0,0.22);
+  color: rgba(255,255,255,0.8);
+  border: 2px solid rgba(255,255,255,0.22);
+}
+
+#btn-back:active { transform: scale(0.93); }
+
+/* ───────────────────────────────────────
+   応援ポップアップ
+─────────────────────────────────────── */
+#cheer-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#cheer-popup.hidden { display: none; }
+
+#cheer-box {
+  background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+  border-radius: 30px;
+  padding: clamp(18px, 4vh, 28px) clamp(28px, 7vw, 54px);
+  text-align: center;
+  box-shadow: 0 18px 54px rgba(0,0,0,0.32);
+  border: 3px solid rgba(255,255,255,0.5);
+  animation: cheerIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes cheerIn {
+  from { transform: scale(0.25) rotate(-18deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+#cheer-box.out {
+  animation: cheerOut 0.28s ease-in forwards;
+}
+
+@keyframes cheerOut {
+  from { transform: scale(1); opacity: 1; }
+  to   { transform: scale(0.45); opacity: 0; }
+}
+
+#cheer-emoji {
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+#cheer-text {
+  font-size: clamp(1.3rem, 3.5vw, 2rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+
+/* ───────────────────────────────────────
+   全完了画面
+─────────────────────────────────────── */
+#done-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#done-screen.hidden { display: none; }
+
+#confetti {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+#done-box {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  animation: doneIn 0.72s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes doneIn {
+  from { transform: scale(0.25) rotate(-22deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+#done-trophy {
+  font-size: clamp(5rem, 13vw, 9.5rem);
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: trophyRock 2.2s ease-in-out infinite;
+}
+
+@keyframes trophyRock {
+  0%,100% { transform: rotate(-9deg) scale(1); }
+  50%     { transform: rotate(9deg) scale(1.1); }
+}
+
+#done-title {
+  font-size: clamp(2.2rem, 7vw, 4.8rem);
+  font-weight: 900;
+  color: #FFD93D;
+  text-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+  margin-bottom: 10px;
+}
+
+#done-sub {
+  font-size: clamp(1.1rem, 3.2vw, 1.9rem);
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+#done-stars {
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  letter-spacing: 8px;
+  margin-bottom: 28px;
+  animation: starAppear 0.7s 0.6s ease both;
+}
+
+@keyframes starAppear {
+  from { opacity: 0; transform: scale(0) rotate(180deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+#btn-reset {
+  background: rgba(255,255,255,0.16);
+  border: 3px solid rgba(255,255,255,0.4);
+  border-radius: 50px;
+  padding: 16px 44px;
+  color: #fff;
+  font-size: clamp(1.05rem, 2.8vw, 1.5rem);
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  min-height: 58px;
+  transition: all 0.18s ease;
+}
+
+#btn-reset:active {
+  transform: scale(0.94);
+  background: rgba(255,255,255,0.26);
+}
+
+/* ───────────────────────────────────────
+   浮遊パーティクル
+─────────────────────────────────────── */
+.particle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.6rem;
+  z-index: 250;
+  animation: floatUp 1.3s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx, 0), -140px) scale(0.3); opacity: 0; }
+}
+
+/* ───────────────────────────────────────
+   クイックメッセージ
+─────────────────────────────────────── */
+.quick-msg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  background: rgba(0,0,0,0.72);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  animation: quickFade 1.5s ease forwards;
+}
+
+@keyframes quickFade {
+  0%   { opacity: 0; transform: translate(-50%, -70%); }
+  20%  { opacity: 1; transform: translate(-50%, -60%); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%); }
+}
+
+/* ───────────────────────────────────────
+   セーフエリア（ノッチ対応）
+─────────────────────────────────────── */
+@supports (padding: max(0px)) {
+  #header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(var(--hh) + env(safe-area-inset-top));
+  }
+  #main {
+    top: calc(var(--hh) + env(safe-area-inset-top));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ───────────────────────────────────────
+   小型デバイス対応
+─────────────────────────────────────── */
+@media (orientation: landscape) and (max-height: 480px) {
+  :root { --hh: 54px; }
+  #timer-circle-wrap { width: 120px; height: 120px; }
+  #timer-digits { font-size: 1.7rem; }
+  #timer-card { padding: 14px 22px; }
+}
+
+/* ───────────────────────────────────────
+   設定ボタン（ヘッダー）
+─────────────────────────────────────── */
+#settings-btn {
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+#settings-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.28); }
+
+/* ───────────────────────────────────────
+   PINオーバーレイ
+─────────────────────────────────────── */
+#pin-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: fadeIn 0.22s ease;
+}
+#pin-overlay.hidden { display: none; }
+
+#pin-box {
+  background: linear-gradient(135deg, #2d1b6e, #1a3a6e);
+  border-radius: 28px;
+  padding: 28px 32px;
+  text-align: center;
+  width: min(92vw, 340px);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+  border: 2px solid rgba(255,255,255,0.2);
+  animation: slideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#pin-title {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  font-weight: 900; color: #fff;
+  margin-bottom: 6px;
+}
+#pin-sub {
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 18px;
+}
+
+#pin-dots {
+  display: flex; gap: 14px; justify-content: center;
+  margin-bottom: 10px;
+}
+.pin-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.5);
+  background: transparent;
+  transition: all 0.18s ease;
+}
+.pin-dot.filled {
+  background: #FFD93D;
+  border-color: #FFD93D;
+  transform: scale(1.1);
+}
+
+#pin-error {
+  color: #FF6B6B;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  animation: shake 0.4s ease;
+}
+#pin-error.hidden { display: none; }
+
+#pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+#pin-pad button {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 14px;
+  color: white;
+  font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  font-weight: 700;
+  font-family: var(--font);
+  height: 60px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+#pin-pad button:active {
+  background: rgba(255,255,255,0.28);
+  transform: scale(0.92);
+}
+
+#pin-cancel-btn {
+  background: none; border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 1rem; font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  padding: 8px 20px;
+}
+#pin-cancel-btn:active { color: white; }
+
+/* ───────────────────────────────────────
+   設定オーバーレイ
+─────────────────────────────────────── */
+#settings-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: fadeIn 0.22s ease;
+}
+#settings-overlay.hidden { display: none; }
+
+#settings-box {
+  background: #1e1e3a;
+  border-radius: 24px;
+  width: min(96vw, 680px);
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.14);
+  overflow: hidden;
+  animation: slideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#settings-hd {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+#settings-title {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-weight: 900; color: white;
+}
+#settings-save-btn {
+  background: linear-gradient(135deg, #43E97B, #38F9D7);
+  border: none; border-radius: 50px;
+  padding: 10px 22px;
+  color: #1a1a2e;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 900;
+  cursor: pointer; font-family: var(--font);
+  transition: transform 0.14s ease;
+}
+#settings-save-btn:active { transform: scale(0.93); }
+
+#settings-body {
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+  flex: 1;
+}
+
+.s-section-label {
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+  font-weight: 900; color: rgba(255,255,255,0.7);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+/* タスク行 */
+.s-task-row {
+  display: flex; align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* トグルスイッチ */
+.s-toggle { flex-shrink: 0; position: relative; width: 44px; height: 24px; }
+.s-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.s-toggle-track {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.18);
+  border-radius: 12px; cursor: pointer;
+  transition: background 0.22s ease;
+}
+.s-toggle input:checked + .s-toggle-track { background: #43E97B; }
+.s-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  background: white; border-radius: 50%;
+  transition: left 0.22s ease;
+}
+.s-toggle input:checked + .s-toggle-track::after { left: 23px; }
+
+/* 絵文字ボタン */
+.s-emoji-btn {
+  flex-shrink: 0;
+  font-size: 1.6rem; line-height: 1;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  width: 44px; height: 44px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.14s ease;
+}
+.s-emoji-btn:active { transform: scale(0.88); }
+
+/* タスク名入力 */
+.s-name-input {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: white;
+  font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+  font-weight: 700;
+  font-family: var(--font);
+  min-width: 0;
+}
+.s-name-input:focus { outline: none; border-color: #FFD93D; }
+
+/* 時間ステッパー */
+.s-duration {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+.s-dur-btn {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  color: white; font-size: 1.1rem; font-weight: 900;
+  width: 32px; height: 32px;
+  cursor: pointer; font-family: var(--font);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.14s ease;
+}
+.s-dur-btn:active { background: rgba(255,255,255,0.28); transform: scale(0.9); }
+.s-dur-label {
+  font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+  color: rgba(255,255,255,0.9);
+  font-weight: 700;
+  min-width: 42px; text-align: center;
+  white-space: nowrap;
+}
+
+/* 削除ボタン */
+.s-del-btn {
+  flex-shrink: 0;
+  background: rgba(255,100,100,0.15);
+  border: 1px solid rgba(255,100,100,0.3);
+  border-radius: 8px;
+  color: #FF6B6B; font-size: 1rem;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.14s ease;
+}
+.s-del-btn:active { background: rgba(255,100,100,0.3); transform: scale(0.9); }
+
+#add-task-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: 2px dashed rgba(255,255,255,0.25);
+  border-radius: 14px;
+  color: rgba(255,255,255,0.7);
+  font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  margin-top: 4px;
+}
+#add-task-btn:active { background: rgba(255,255,255,0.15); }
+
+/* PIN変更 */
+#pin-change-row {
+  display: flex; gap: 10px; align-items: center;
+  margin-top: 8px;
+}
+#new-pin-input {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: white;
+  font-size: 1rem; font-weight: 700;
+  font-family: var(--font);
+  max-width: 200px;
+}
+#new-pin-input:focus { outline: none; border-color: #FFD93D; }
+#new-pin-input::placeholder { color: rgba(255,255,255,0.35); }
+
+#pin-change-row button {
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  border: none; border-radius: 10px;
+  padding: 10px 18px; color: white;
+  font-size: 0.95rem; font-weight: 700;
+  font-family: var(--font); cursor: pointer;
+  transition: transform 0.14s ease;
+}
+#pin-change-row button:active { transform: scale(0.93); }
+
+#pin-change-msg {
+  margin-top: 8px;
+  font-size: 0.9rem; font-weight: 700;
+  color: #43E97B;
+}
+#pin-change-msg.hidden { display: none; }
+#pin-change-msg.error { color: #FF6B6B; }
+
+/* ───────────────────────────────────────
+   キャラクター（浮遊）
+─────────────────────────────────────── */
+#char-wrap {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 160;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#char-body {
+  width: 76px;
+  height: 76px;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  cursor: pointer;
+  pointer-events: auto;
+  border: 3px solid rgba(255,255,255,0.35);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+  animation: charIdle 2.4s ease-in-out infinite;
+  transition: transform 0.15s ease;
+}
+
+#char-body:active { transform: scale(0.9); }
+
+@keyframes charIdle {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%       { transform: translateY(-10px) rotate(3deg); }
+}
+
+#char-body.happy {
+  animation: charHappy 0.55s ease forwards, charIdle 2.4s ease-in-out 0.55s infinite;
+}
+
+@keyframes charHappy {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(1.45) rotate(-18deg); }
+  55%  { transform: scale(1.25) rotate(14deg); }
+  80%  { transform: scale(1.1) rotate(-6deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* 吹き出し */
+#char-bubble {
+  background: #fff;
+  border-radius: 18px;
+  padding: 10px 16px;
+  max-width: 200px;
+  text-align: center;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 800;
+  color: #333;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+  position: relative;
+  animation: bubbleIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+  line-height: 1.4;
+}
+
+#char-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #fff;
+}
+
+#char-bubble.hidden { display: none; }
+
+@keyframes bubbleIn {
+  from { transform: scale(0.4) translateY(10px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+#char-bubble.out {
+  animation: bubbleOut 0.25s ease-in forwards;
+}
+
+@keyframes bubbleOut {
+  from { transform: scale(1); opacity: 1; }
+  to   { transform: scale(0.4); opacity: 0; }
+}
+
+/* ───────────────────────────────────────
+   キャラクター選択
+─────────────────────────────────────── */
+#char-select-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: fadeIn 0.22s ease;
+}
+
+#char-select-overlay.hidden { display: none; }
+
+#char-select-box {
+  background: linear-gradient(135deg, #2d1b6e, #1a3a6e);
+  border-radius: 28px;
+  padding: clamp(20px, 4vh, 32px) clamp(20px, 5vw, 36px);
+  text-align: center;
+  max-width: min(92vw, 540px);
+  width: 100%;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+  border: 2px solid rgba(255,255,255,0.22);
+  animation: slideUp 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#char-select-title {
+  font-size: clamp(1.1rem, 3vw, 1.7rem);
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 18px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+#char-grid-sel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.char-opt {
+  background: rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 12px 6px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.char-opt:active { transform: scale(0.91); }
+
+.char-opt.sel {
+  border-color: #FFD93D;
+  background: rgba(255,215,61,0.2);
+  box-shadow: 0 0 16px rgba(255,215,61,0.3);
+}
+
+.char-opt-emoji {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  line-height: 1;
+}
+
+.char-opt-name {
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+  color: rgba(255,255,255,0.9);
+  font-weight: 700;
+}
+
+#char-select-btn {
+  background: linear-gradient(135deg, #FFD93D, #FF6B6B);
+  border: none;
+  border-radius: 50px;
+  padding: 14px 48px;
+  color: #fff;
+  font-size: clamp(1rem, 2.8vw, 1.3rem);
+  font-weight: 900;
+  cursor: pointer;
+  font-family: var(--font);
+  min-height: 52px;
+  box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+  transition: transform 0.15s ease;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+#char-select-btn:active { transform: scale(0.94); }

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="朝ルーティン">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="style.css">
+  <title>☀️ 朝ルーティン応援アプリ</title>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header id="header">
+    <div id="hd-left">
+      <div id="app-title">☀️ あさのじゅんび</div>
+    </div>
+    <div id="hd-center">
+      <div id="progress-label">
+        <span id="done-count">0</span>/<span id="all-count">6</span> おわった！
+      </div>
+      <div id="progress-wrap">
+        <div id="progress-bar"></div>
+      </div>
+    </div>
+    <div id="hd-right">
+      <div id="clock">00:00</div>
+      <button id="settings-btn" onclick="openPinScreen()" title="おや設定">⚙️</button>
+    </div>
+  </header>
+
+  <!-- タスクグリッド -->
+  <main id="main">
+    <div id="task-grid" role="list"></div>
+  </main>
+
+  <!-- タイマーオーバーレイ -->
+  <div id="timer-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="タイマー">
+    <div id="timer-card">
+      <div id="timer-emoji"></div>
+      <div id="timer-name"></div>
+      <div id="timer-circle-wrap">
+        <svg id="timer-svg" viewBox="0 0 200 200" aria-hidden="true">
+          <circle cx="100" cy="100" r="88"
+            fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="14"/>
+          <circle id="timer-arc" cx="100" cy="100" r="88"
+            fill="none" stroke="white" stroke-width="14"
+            stroke-linecap="round"
+            stroke-dasharray="553"
+            stroke-dashoffset="0"
+            transform="rotate(-90 100 100)"/>
+        </svg>
+        <div id="timer-digits">
+          <span id="t-min">00</span>
+          <span id="t-sep">:</span>
+          <span id="t-sec">00</span>
+        </div>
+      </div>
+      <div id="timer-msg">がんばれ！</div>
+      <div id="timer-btns">
+        <button id="btn-done" onclick="completeCurrentTask()">✅ できた！</button>
+        <button id="btn-back" onclick="closeTimerOverlay()">← もどる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 応援ポップアップ -->
+  <div id="cheer-popup" class="hidden" aria-live="polite">
+    <div id="cheer-box">
+      <div id="cheer-emoji"></div>
+      <div id="cheer-text"></div>
+    </div>
+  </div>
+
+  <!-- 全完了画面 -->
+  <div id="done-screen" class="hidden">
+    <canvas id="confetti"></canvas>
+    <div id="done-box">
+      <div id="done-trophy">🏆</div>
+      <div id="done-title">今日も完璧！</div>
+      <div id="done-sub">ぜんぶできたね！すごい！！</div>
+      <div id="done-stars">⭐⭐⭐⭐⭐</div>
+      <button id="btn-reset" onclick="resetAll()">🔄 もう一度やる</button>
+    </div>
+  </div>
+
+  <!-- PIN入力オーバーレイ -->
+  <div id="pin-overlay" class="hidden">
+    <div id="pin-box">
+      <div id="pin-title">🔐 おや設定</div>
+      <div id="pin-sub">4けたのかずをいれてね</div>
+      <div id="pin-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div id="pin-error" class="hidden">ちがうよ！もう一度</div>
+      <div id="pin-pad">
+        <button onclick="onPinDigit('1')">1</button>
+        <button onclick="onPinDigit('2')">2</button>
+        <button onclick="onPinDigit('3')">3</button>
+        <button onclick="onPinDigit('4')">4</button>
+        <button onclick="onPinDigit('5')">5</button>
+        <button onclick="onPinDigit('6')">6</button>
+        <button onclick="onPinDigit('7')">7</button>
+        <button onclick="onPinDigit('8')">8</button>
+        <button onclick="onPinDigit('9')">9</button>
+        <button id="pin-clear-btn" onclick="onPinClear()">✕</button>
+        <button onclick="onPinDigit('0')">0</button>
+        <button onclick="onPinDelete()">⌫</button>
+      </div>
+      <button id="pin-cancel-btn" onclick="closePinScreen()">← もどる</button>
+    </div>
+  </div>
+
+  <!-- 設定オーバーレイ -->
+  <div id="settings-overlay" class="hidden">
+    <div id="settings-box">
+      <div id="settings-hd">
+        <div id="settings-title">⚙️ おや設定</div>
+        <button id="settings-save-btn" onclick="closeSettings()">✅ ほぞんしてとじる</button>
+      </div>
+      <div id="settings-body">
+        <div class="s-section-label">📋 タスクの一覧</div>
+        <div id="settings-task-list"></div>
+        <button id="add-task-btn" onclick="addTask()">＋ タスクをついか</button>
+
+        <div class="s-section-label" style="margin-top:22px">🔐 ひみつのかず (PIN)</div>
+        <div id="pin-change-row">
+          <input id="new-pin-input" type="tel" inputmode="numeric"
+            placeholder="4けたのあたらしいかず" maxlength="4" pattern="[0-9]*">
+          <button onclick="changePin()">かえる</button>
+        </div>
+        <div id="pin-change-msg" class="hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- キャラクター（浮遊） -->
+  <div id="char-wrap">
+    <div id="char-bubble" class="hidden">
+      <div id="char-bubble-text"></div>
+    </div>
+    <div id="char-body" onclick="openCharSelect()" title="キャラをかえる">
+      <span id="char-emoji">❓</span>
+    </div>
+  </div>
+
+  <!-- キャラクター選択オーバーレイ -->
+  <div id="char-select-overlay" class="hidden">
+    <div id="char-select-box">
+      <div id="char-select-title">🌟 すきなキャラをえらんでね！</div>
+      <div id="char-grid-sel"></div>
+      <button id="char-select-btn" onclick="closeCharSelect()">✨ けってい！</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

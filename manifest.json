@@ -1,0 +1,20 @@
+{
+  "name": "朝ルーティン応援アプリ",
+  "short_name": "朝ルーティン",
+  "description": "子供の朝の準備をたのしくサポートするアプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "lang": "ja",
+  "categories": ["education", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
