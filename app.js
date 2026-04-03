@@ -666,19 +666,75 @@ function playCompletionSound() {
 // ─────────────────────────────────────────────
 // 音声合成（日本語TTS）
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// 声の設定
+// ─────────────────────────────────────────────
+function loadVoiceSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('mrapp_voice') || 'null')
+      || { voiceURI: null, pitch: 1.3, rate: 1.0 };
+  } catch { return { voiceURI: null, pitch: 1.3, rate: 1.0 }; }
+}
+
+function saveVoiceSettings(s) {
+  try { localStorage.setItem('mrapp_voice', JSON.stringify(s)); } catch(e) {}
+}
+
+function renderVoiceSettings() {
+  if (!window.speechSynthesis) return;
+  const settings = loadVoiceSettings();
+  const voices   = speechSynthesis.getVoices();
+  const sel      = document.getElementById('voice-select');
+  if (!sel) return;
+
+  sel.innerHTML = '<option value="">（じどう）</option>';
+  voices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI;
+    opt.textContent = `${v.name} (${v.lang})`;
+    if (v.voiceURI === settings.voiceURI) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  const pitchSl = document.getElementById('pitch-slider');
+  const rateSl  = document.getElementById('rate-slider');
+  if (pitchSl) { pitchSl.value = settings.pitch; document.getElementById('pitch-val').textContent = Number(settings.pitch).toFixed(1); }
+  if (rateSl)  { rateSl.value  = settings.rate;  document.getElementById('rate-val').textContent  = Number(settings.rate).toFixed(1); }
+}
+
+function onVoiceSettingChange() {
+  const s = {
+    voiceURI: document.getElementById('voice-select').value || null,
+    pitch:    parseFloat(document.getElementById('pitch-slider').value),
+    rate:     parseFloat(document.getElementById('rate-slider').value),
+  };
+  document.getElementById('pitch-val').textContent = s.pitch.toFixed(1);
+  document.getElementById('rate-val').textContent  = s.rate.toFixed(1);
+  saveVoiceSettings(s);
+}
+
+function testVoice() {
+  speak('えへへ！くろみがおうえんするよ！いっしょにがんばろ！');
+}
+
 function speak(text) {
   if (!window.speechSynthesis) return;
   try {
     speechSynthesis.cancel();
+    const settings = loadVoiceSettings();
     const doSpeak = () => {
       const u = new SpeechSynthesisUtterance(text);
-      u.lang   = 'ja-JP';
-      u.rate   = 1.0;
-      u.pitch  = 1.3;
+      const voices = speechSynthesis.getVoices();
+      if (settings.voiceURI) {
+        const v = voices.find(v => v.voiceURI === settings.voiceURI);
+        if (v) u.voice = v;
+      }
+      if (!u.voice) u.lang = 'ja-JP';
+      u.rate   = settings.rate  ?? 1.0;
+      u.pitch  = settings.pitch ?? 1.3;
       u.volume = 1.0;
       speechSynthesis.speak(u);
     };
-    // voices未ロードなら読み込み完了後に実行（Chrome Android対策）
     if (speechSynthesis.getVoices().length > 0) {
       doSpeak();
     } else {
@@ -951,6 +1007,7 @@ function verifyPin() {
 // ─────────────────────────────────────────────
 function openSettingsScreen() {
   renderSettingsTasks();
+  renderVoiceSettings();
   document.getElementById('new-pin-input').value = '';
   document.getElementById('pin-change-msg').classList.add('hidden');
   document.getElementById('settings-overlay').classList.remove('hidden');
