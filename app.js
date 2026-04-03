@@ -343,8 +343,8 @@ function completeCurrentTask() {
   const cheer = rand(cheerPool);
   showCheer(cheer);
   showCharBubble(cheer.text);
-  // 効果音が終わってから読み上げ（iOS干渉対策）
-  setTimeout(() => speak(cheer.text), 700);
+  // タップ直後に読み上げ予約（Chrome対策：setTimeout不使用）
+  speak(cheer.text);
 
   if (getActiveTasks().every(t => completed.has(t.id))) {
     setTimeout(showCompletion, 1900);
@@ -655,12 +655,20 @@ function speak(text) {
   if (!window.speechSynthesis) return;
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang   = 'ja-JP';
-    u.rate   = 1.0;
-    u.pitch  = 1.3;
-    u.volume = 1.0;
-    speechSynthesis.speak(u);
+    const doSpeak = () => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang   = 'ja-JP';
+      u.rate   = 1.0;
+      u.pitch  = 1.3;
+      u.volume = 1.0;
+      speechSynthesis.speak(u);
+    };
+    // voices未ロードなら読み込み完了後に実行（Chrome Android対策）
+    if (speechSynthesis.getVoices().length > 0) {
+      doSpeak();
+    } else {
+      speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
+    }
   } catch(e) {}
 }
 
