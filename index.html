@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
   <title>☀️ 朝ルーティン応援アプリ</title>
 </head>
 <body>
@@ -167,6 +167,10 @@
           <span id="rate-val" class="s-voice-val">1.0</span>
         </div>
         <button id="voice-test-btn" onclick="testVoice()">▶ ためし聴き</button>
+
+        <div class="s-section-label" style="margin-top:22px">🎤 じぶんの声を録音</div>
+        <div id="voice-rec-hint">🎙️をタップして録音、📁でファイルをアップロードできます</div>
+        <div id="voice-rec-list"></div>
       </div>
     </div>
   </div>
@@ -179,6 +183,6 @@
     <div id="char-body" onclick="onCharTap()" title="くろみちゃん"></div>
   </div>
 
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

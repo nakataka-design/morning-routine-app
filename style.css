@@ -1071,6 +1071,95 @@ html, body {
 #voice-test-btn:active { transform: scale(0.94); }
 
 /* ───────────────────────────────────────
+   録音ボイスクリップ
+─────────────────────────────────────── */
+#voice-rec-hint {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  margin: 4px 0 10px;
+}
+
+#voice-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.voice-rec-row {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.voice-rec-info {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.voice-rec-label {
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #C77DFF;
+  white-space: nowrap;
+  background: rgba(155,89,182,0.2);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.voice-rec-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.4;
+}
+
+.voice-rec-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vrb {
+  border: none;
+  border-radius: 10px;
+  padding: 7px 13px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.vrb:active { transform: scale(0.92); }
+
+.vrb-rec  { background: linear-gradient(135deg, #FF6B6B, #FF4081); color: #fff; }
+.vrb-stop { background: linear-gradient(135deg, #FF4081, #C2185B); color: #fff; animation: recPulse 0.9s ease-in-out infinite; }
+.vrb-up   { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.2); }
+.vrb-play { background: linear-gradient(135deg, #43E97B, #38F9D7); color: #111; }
+.vrb-del  { background: rgba(255,80,80,0.12); color: #FF6B6B; border: 1px solid rgba(255,80,80,0.25); }
+.vrb-disabled { opacity: 0.4; cursor: default; }
+
+@keyframes recPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,64,129,0.6); }
+  50%       { box-shadow: 0 0 0 8px rgba(255,64,129,0); }
+}
+
+.voice-rec-status {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.3);
+  font-weight: 700;
+}
+.voice-rec-status.has-clip { color: #43E97B; }
+
+/* ───────────────────────────────────────
    キャラクター（浮遊）
 ─────────────────────────────────────── */
 #char-wrap {

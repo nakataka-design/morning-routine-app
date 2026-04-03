@@ -153,6 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadTasks();
   loadState();
   await loadCharacter();
+  await preloadVoiceClips();
   renderTasks();
   updateHeader();
   updateClock();
@@ -664,6 +665,206 @@ function playCompletionSound() {
 }
 
 // ─────────────────────────────────────────────
+// 録音ボイスクリップ（IndexedDB）
+// ─────────────────────────────────────────────
+
+// テキスト → 保存キー のマッピング
+const VOICE_KEY_MAP = {};
+VOICE_KEY_MAP[CHARACTER.greeting] = 'greeting';
+VOICE_KEY_MAP[CHARACTER.done]     = 'done';
+CHARACTER.cheers.forEach((t, i) => { VOICE_KEY_MAP[t] = `cheer${i}`; });
+CHARACTER.timer.forEach((t, i)  => { VOICE_KEY_MAP[t] = `timer${i}`; });
+
+// 録音ラベル一覧（設定画面表示用）
+const VOICE_REC_LABELS = [
+  { key: 'greeting', label: 'あいさつ',    text: CHARACTER.greeting },
+  ...CHARACTER.cheers.map((t, i) => ({ key: `cheer${i}`, label: `おうえん ${i + 1}`, text: t })),
+  { key: 'done',     label: 'ぜんぶできた！', text: CHARACTER.done },
+];
+
+// デコード済みバッファのキャッシュ
+const _voiceBuffers = {};
+
+// IndexedDB ヘルパー
+function openVoiceDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('mrapp_voice_clips', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('clips');
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror  = () => reject(req.error);
+  });
+}
+
+async function saveVoiceClip(key, blob) {
+  const db = await openVoiceDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('clips', 'readwrite');
+    tx.objectStore('clips').put(blob, key);
+    tx.oncomplete = resolve;
+    tx.onerror    = () => reject(tx.error);
+  });
+}
+
+async function loadVoiceClip(key) {
+  try {
+    const db = await openVoiceDB();
+    return new Promise(resolve => {
+      const req = db.transaction('clips', 'readonly').objectStore('clips').get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror   = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function deleteVoiceClip(key) {
+  const db = await openVoiceDB();
+  return new Promise(resolve => {
+    const tx = db.transaction('clips', 'readwrite');
+    tx.objectStore('clips').delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror    = resolve;
+  });
+}
+
+async function getAllVoiceClipKeys() {
+  try {
+    const db = await openVoiceDB();
+    return new Promise(resolve => {
+      const req = db.transaction('clips', 'readonly').objectStore('clips').getAllKeys();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror   = () => resolve([]);
+    });
+  } catch { return []; }
+}
+
+// ファイルをデコードしてバッファにキャッシュ
+async function decodeAndCacheVoice(key) {
+  const blob = await loadVoiceClip(key);
+  if (!blob) { delete _voiceBuffers[key]; return; }
+  try {
+    const arr = await blob.arrayBuffer();
+    const ctx = getCtx();
+    _voiceBuffers[key] = await ctx.decodeAudioData(arr);
+  } catch { delete _voiceBuffers[key]; }
+}
+
+// 起動時に全クリップをプリロード
+async function preloadVoiceClips() {
+  const keys = await getAllVoiceClipKeys();
+  for (const key of keys) {
+    await decodeAndCacheVoice(key);
+  }
+}
+
+// バッファを即時再生（ユーザージェスチャー不要）
+function playVoiceBuffer(key) {
+  const buf = _voiceBuffers[key];
+  if (!buf) return false;
+  try {
+    const ctx = getCtx();
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start();
+    return true;
+  } catch { return false; }
+}
+
+// ─────────────────────────────────────────────
+// 録音 UI
+// ─────────────────────────────────────────────
+let _mediaRecorder = null;
+let _recordingKey  = null;
+let _recordChunks  = [];
+
+async function startRecording(key) {
+  if (_mediaRecorder && _mediaRecorder.state !== 'inactive') {
+    _mediaRecorder.stop();
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _recordChunks = [];
+    _recordingKey = key;
+    _mediaRecorder = new MediaRecorder(stream);
+    _mediaRecorder.ondataavailable = e => { if (e.data.size > 0) _recordChunks.push(e.data); };
+    _mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(_recordChunks, { type: 'audio/webm' });
+      await saveVoiceClip(_recordingKey, blob);
+      await decodeAndCacheVoice(_recordingKey);
+      _mediaRecorder = null;
+      renderVoiceRecList();
+    };
+    _mediaRecorder.start();
+    renderVoiceRecList();
+  } catch(e) {
+    alert('マイクが使えません: ' + e.message);
+  }
+}
+
+function stopRecording() {
+  if (_mediaRecorder && _mediaRecorder.state !== 'inactive') {
+    _mediaRecorder.stop();
+  }
+}
+
+async function uploadVoiceClip(key) {
+  const input = document.createElement('input');
+  input.type   = 'file';
+  input.accept = 'audio/*';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    await saveVoiceClip(key, file);
+    await decodeAndCacheVoice(key);
+    renderVoiceRecList();
+  };
+  input.click();
+}
+
+async function deleteVoiceClipByKey(key) {
+  await deleteVoiceClip(key);
+  delete _voiceBuffers[key];
+  renderVoiceRecList();
+}
+
+function previewVoice(key) {
+  playVoiceBuffer(key);
+}
+
+function renderVoiceRecList() {
+  const el = document.getElementById('voice-rec-list');
+  if (!el) return;
+  el.innerHTML = '';
+  const isRecording = _mediaRecorder && _mediaRecorder.state === 'recording';
+
+  VOICE_REC_LABELS.forEach(({ key, label, text }) => {
+    const hasClip = !!_voiceBuffers[key];
+    const isThisRec = isRecording && _recordingKey === key;
+
+    const row = document.createElement('div');
+    row.className = 'voice-rec-row';
+    row.innerHTML = `
+      <div class="voice-rec-info">
+        <span class="voice-rec-label">${label}</span>
+        <span class="voice-rec-text">${text}</span>
+      </div>
+      <div class="voice-rec-btns">
+        ${isThisRec
+          ? `<button class="vrb vrb-stop" onclick="stopRecording()">⏹ 停止</button>`
+          : `<button class="vrb vrb-rec${isRecording ? ' vrb-disabled' : ''}" onclick="startRecording('${key}')" ${isRecording ? 'disabled' : ''}>🎤</button>`
+        }
+        <button class="vrb vrb-up" onclick="uploadVoiceClip('${key}')">📁</button>
+        ${hasClip ? `<button class="vrb vrb-play" onclick="previewVoice('${key}')">▶</button>` : ''}
+        ${hasClip ? `<button class="vrb vrb-del" onclick="deleteVoiceClipByKey('${key}')">🗑</button>` : ''}
+      </div>
+      <div class="voice-rec-status ${hasClip ? 'has-clip' : ''}">${hasClip ? '✅ 録音済み' : '─'}</div>
+    `;
+    el.appendChild(row);
+  });
+}
+
+// ─────────────────────────────────────────────
 // 音声合成（日本語TTS）
 // ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
@@ -718,6 +919,11 @@ function testVoice() {
 }
 
 function speak(text) {
+  // カスタム録音があれば優先再生
+  const key = VOICE_KEY_MAP[text];
+  if (key && playVoiceBuffer(key)) return;
+
+  // なければTTSにフォールバック
   if (!window.speechSynthesis) return;
   try {
     speechSynthesis.cancel();
@@ -1008,6 +1214,7 @@ function verifyPin() {
 function openSettingsScreen() {
   renderSettingsTasks();
   renderVoiceSettings();
+  renderVoiceRecList();
   document.getElementById('new-pin-input').value = '';
   document.getElementById('pin-change-msg').classList.add('hidden');
   document.getElementById('settings-overlay').classList.remove('hidden');
