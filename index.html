@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
   <title>☀️ 朝ルーティン応援アプリ</title>
 </head>
 <body>
@@ -146,20 +146,9 @@
     <div id="char-bubble" class="hidden">
       <div id="char-bubble-text"></div>
     </div>
-    <div id="char-body" onclick="openCharSelect()" title="キャラをかえる">
-      <span id="char-emoji">❓</span>
-    </div>
+    <div id="char-body" onclick="onCharTap()" title="くろみちゃん"></div>
   </div>
 
-  <!-- キャラクター選択オーバーレイ -->
-  <div id="char-select-overlay" class="hidden">
-    <div id="char-select-box">
-      <div id="char-select-title">🌟 すきなキャラをえらんでね！</div>
-      <div id="char-grid-sel"></div>
-      <button id="char-select-btn" onclick="closeCharSelect()">✨ けってい！</button>
-    </div>
-  </div>
-
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

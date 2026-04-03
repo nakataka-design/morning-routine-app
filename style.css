@@ -970,20 +970,14 @@ html, body {
 }
 
 #char-body {
-  width: 76px;
-  height: 76px;
-  background: rgba(255,255,255,0.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 50%;
+  width: 80px;
+  height: 112px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
   cursor: pointer;
   pointer-events: auto;
-  border: 3px solid rgba(255,255,255,0.35);
-  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
   animation: charIdle 2.4s ease-in-out infinite;
   transition: transform 0.15s ease;
 }

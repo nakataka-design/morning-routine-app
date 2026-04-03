@@ -49,66 +49,81 @@ const TIMER_MSGS = [
 const CIRCUMFERENCE = 553; // 2π × 88 ≈ 552.9
 
 // ─────────────────────────────────────────────
-// キャラクターデータ
+// キャラクターデータ（くろみちゃん）
 // ─────────────────────────────────────────────
-const CHARACTERS = [
-  {
-    id:'cat', emoji:'🐱', name:'ねこ', color:'#FF8E53',
-    greeting: 'にゃ〜！よろしくにゃ！いっしょにがんばろうにゃ！',
-    cheers:  ['にゃ！すごいにゃ！', 'さすが！にゃ〜！', 'ぱちぱち〜にゃ！', 'かっこいいにゃ！', 'にゃんと！はやい！'],
-    timer:   ['がんばるにゃ！', 'もうすぐにゃ！', 'できるにゃ！', 'すごいにゃ！', 'その調子にゃ！', 'いい感じにゃ！'],
-    done:    'にゃーん！ぜんぶできたにゃ！最高にゃ！',
-  },
-  {
-    id:'dog', emoji:'🐶', name:'いぬ', color:'#FFD93D',
-    greeting: 'わん！よろしく！いっしょにがんばろう！',
-    cheers:  ['わん！やったね！', 'すごいわん！', 'えらいわん！', 'ワンダフル！', 'だいすき！わん！'],
-    timer:   ['がんばれ〜わん！', 'もうすぐわん！', 'できるわん！', 'すごいわん！', 'その調子わん！', 'いい子いい子！'],
-    done:    'わわわ〜ん！ぜんぶできた！いい子いい子！',
-  },
-  {
-    id:'panda', emoji:'🐼', name:'パンダ', color:'#4ECDC4',
-    greeting: 'もぐもぐ...よろしく！いっしょにがんばろう！',
-    cheers:  ['ぱちぱち〜！', 'もぐもぐ...天才！', 'パンダより速い！', 'すごいぞ！', 'パンダも嬉しい！'],
-    timer:   ['がんばれ！', 'もうすぐだよ！', 'できるできる！', 'すごいぞ！', 'もぐもぐ...応援中！', 'その調子！'],
-    done:    'もぐもぐ！！ぜんぶできた！パンダもハッピー！',
-  },
-  {
-    id:'fox', emoji:'🦊', name:'きつね', color:'#FF6B6B',
-    greeting: 'こんこん！よろしく！はやく準備しよう！',
-    cheers:  ['こんこん！すごい！', 'さすがだね！', 'よくできた！', 'ぱちぱちこん！', 'きつねも応援！'],
-    timer:   ['こんこん！がんばれ！', 'もうすぐこん！', 'できるこん！', 'すごいこん！', 'その調子こん！', 'いい感じこん！'],
-    done:    'こんこん〜！ぜんぶできた！すごすぎる！',
-  },
-  {
-    id:'frog', emoji:'🐸', name:'かえる', color:'#43E97B',
-    greeting: 'ケロ！よろしくケロ！がんばろうケロ！',
-    cheers:  ['ケロ！すごい！', 'やったケロ！', 'えらいケロ！', 'ぴょん！天才！', 'ケロケロ大成功！'],
-    timer:   ['がんばるケロ！', 'もうすぐケロ！', 'できるケロ！', 'すごいケロ！', 'その調子ケロ！', 'ケロケロ〜！'],
-    done:    'ケロケロ〜！ぜんぶできたケロ！最高ケロ！',
-  },
-  {
-    id:'unicorn', emoji:'🦄', name:'ユニコーン', color:'#C77DFF',
-    greeting: '✨よろしく！いっしょに輝こう！✨',
-    cheers:  ['✨すごい！✨', '魔法みたい！', 'きらきら！', '虹が出そう！', '完璧！✨'],
-    timer:   ['✨がんばれ！', 'きらきら！もうすぐ！', '魔法の力で！', '輝いてる！', '✨その調子！', 'まばゆい！'],
-    done:    '✨✨ぜんぶできた！最高に輝いてる！✨✨',
-  },
-  {
-    id:'penguin', emoji:'🐧', name:'ペンギン', color:'#45B7D1',
-    greeting: 'よちよち！よろしく！いっしょにがんばろう！',
-    cheers:  ['よちよち！すごい！', 'ぺんぺん！やったね！', 'ぴょこ！最高！', '南極一番！', 'かわいい！えらい！'],
-    timer:   ['よちよち...がんばれ！', 'もうすぐだよ！', 'ぺんぺん！できる！', 'すごい！', 'ぴょこぴょこ！', 'その調子！'],
-    done:    'よちよち〜！ぜんぶできた！南極で一番すごい！',
-  },
-  {
-    id:'rabbit', emoji:'🐰', name:'うさぎ', color:'#FF9A9E',
-    greeting: 'ぴょん！よろしく！いっしょにがんばろう！',
-    cheers:  ['ぴょん！すごい！', 'うさぎもびっくり！', 'ぴょこ！やったね！', 'にんじんあげたい！', 'ほっぺぷにぷに！えらい！'],
-    timer:   ['ぴょん！がんばれ！', 'もうすぐだよ！', 'できるできる！', 'すごいぴょん！', 'その調子ぴょん！', 'うさぎも応援！'],
-    done:    'ぴょんぴょん！ぜんぶできた！うさぎより速い！',
-  },
-];
+const CHARACTER = {
+  id: 'kuromi',
+  name: 'くろみちゃん',
+  emoji: '✨',
+  color: '#9B59B6',
+  greeting: 'えへへ〜！くろみがおうえんするよ！いっしょにがんばろ！',
+  cheers: [
+    'えへへ！すごいじゃん！',
+    'やった！くろみもうれしい！',
+    'さすがだね！かっこいい！',
+    'ぱちぱち〜！天才！',
+    'はやい！びっくりした！',
+    'もう終わった？すごすぎる！',
+  ],
+  timer: [
+    'えへへ、がんばれ！',
+    'もうすぐだよ！',
+    'くろみも応援してる！',
+    'できるできる！',
+    'その調子！',
+    'いい感じ！くろみ見てるよ！',
+  ],
+  done: 'えへへ〜！ぜんぶできた！くろみも最高にうれしい！',
+};
+
+const KUROMI_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" width="80" height="112" style="display:block;overflow:visible">
+  <!-- Body -->
+  <ellipse cx="50" cy="113" rx="19" ry="17" fill="#3D1060"/>
+  <!-- Left arm -->
+  <ellipse cx="27" cy="109" rx="12" ry="6" fill="#3D1060" transform="rotate(25,27,109)"/>
+  <!-- Right arm -->
+  <ellipse cx="73" cy="109" rx="12" ry="6" fill="#3D1060" transform="rotate(-25,73,109)"/>
+  <!-- Left leg -->
+  <rect x="36" y="126" width="12" height="10" rx="5" fill="#111"/>
+  <!-- Right leg -->
+  <rect x="52" y="126" width="12" height="10" rx="5" fill="#111"/>
+  <!-- Bow at neckline -->
+  <path d="M43,97 L50,91 L57,97 L50,103 Z" fill="#CC44BB"/>
+  <circle cx="50" cy="97" r="3.2" fill="#FF99EE"/>
+
+  <!-- Face -->
+  <ellipse cx="50" cy="51" rx="34" ry="33" fill="#FFF5F5"/>
+
+  <!-- Hood main -->
+  <path d="M16,51 Q16,6 50,4 Q84,6 84,51 Q84,27 50,24 Q16,27 16,51Z" fill="#1a1a1a"/>
+  <!-- Left flap -->
+  <ellipse cx="13" cy="43" rx="8" ry="15" fill="#1a1a1a" transform="rotate(-14,13,43)"/>
+  <!-- Right flap -->
+  <ellipse cx="87" cy="43" rx="8" ry="15" fill="#1a1a1a" transform="rotate(14,87,43)"/>
+
+  <!-- Skull on hood -->
+  <ellipse cx="50" cy="17" rx="9" ry="8" fill="white"/>
+  <circle cx="46.5" cy="16" r="2.2" fill="#1a1a1a"/>
+  <circle cx="53.5" cy="16" r="2.2" fill="#1a1a1a"/>
+  <rect x="45" y="22" width="3.5" height="3" rx="0.8" fill="white"/>
+  <rect x="50.5" y="22" width="3.5" height="3" rx="0.8" fill="white"/>
+
+  <!-- Left eye -->
+  <ellipse cx="35" cy="52" rx="11" ry="13" fill="#1a1a1a"/>
+  <circle cx="39.5" cy="47" r="4.5" fill="white"/>
+  <circle cx="40.5" cy="48" r="2" fill="#1a1a1a"/>
+  <!-- Right eye -->
+  <ellipse cx="65" cy="52" rx="11" ry="13" fill="#1a1a1a"/>
+  <circle cx="69.5" cy="47" r="4.5" fill="white"/>
+  <circle cx="70.5" cy="48" r="2" fill="#1a1a1a"/>
+
+  <!-- Cheeks -->
+  <ellipse cx="18" cy="65" rx="12" ry="8" fill="#FFB7C5" opacity="0.7"/>
+  <ellipse cx="82" cy="65" rx="12" ry="8" fill="#FFB7C5" opacity="0.7"/>
+
+  <!-- Mouth -->
+  <path d="M42,73 Q46,79 50,76 Q54,79 58,73" stroke="#DD4488" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>`;
 
 // ─────────────────────────────────────────────
 // 状態
@@ -698,28 +713,13 @@ function showQuickMsg(el, msg) {
 // ─────────────────────────────────────────────
 
 function loadCharacter() {
-  const saved = localStorage.getItem('mrapp_char');
-  if (saved) {
-    selectedChar = CHARACTERS.find(c => c.id === saved) || null;
-    updateCharDisplay();
-    // 起動時の挨拶（少し遅らせて）
-    if (selectedChar) {
-      setTimeout(() => showCharBubble(selectedChar.greeting), 800);
-    }
-  } else {
-    // 初回：キャラ選択を表示
-    setTimeout(() => openCharSelect(), 400);
-  }
+  selectedChar = CHARACTER;
+  updateCharDisplay();
+  setTimeout(() => showCharBubble(selectedChar.greeting), 800);
 }
 
 function updateCharDisplay() {
-  if (!selectedChar) return;
-  document.getElementById('char-emoji').textContent = selectedChar.emoji;
-  // キャラカラーでボーダー演出
-  document.getElementById('char-body').style.borderColor =
-    selectedChar.color + '99';
-  document.getElementById('char-body').style.boxShadow =
-    `0 6px 22px rgba(0,0,0,0.35), 0 0 0 3px ${selectedChar.color}44`;
+  document.getElementById('char-body').innerHTML = KUROMI_SVG;
 }
 
 function showCharBubble(text) {
@@ -744,34 +744,8 @@ function showCharBubble(text) {
   }, 3200);
 }
 
-function openCharSelect() {
-  const overlay = document.getElementById('char-select-overlay');
-  const grid    = document.getElementById('char-grid-sel');
-  grid.innerHTML = '';
-
-  CHARACTERS.forEach(c => {
-    const el = document.createElement('div');
-    el.className = 'char-opt' + (selectedChar?.id === c.id ? ' sel' : '');
-    el.innerHTML = `
-      <div class="char-opt-emoji">${c.emoji}</div>
-      <div class="char-opt-name">${c.name}</div>`;
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.char-opt').forEach(o => o.classList.remove('sel'));
-      el.classList.add('sel');
-      selectedChar = c;
-    });
-    grid.appendChild(el);
-  });
-
-  overlay.classList.remove('hidden');
-}
-
-function closeCharSelect() {
-  if (!selectedChar) selectedChar = CHARACTERS[0];
-  localStorage.setItem('mrapp_char', selectedChar.id);
-  updateCharDisplay();
-  document.getElementById('char-select-overlay').classList.add('hidden');
-  setTimeout(() => showCharBubble(selectedChar.greeting), 400);
+function onCharTap() {
+  showCharBubble(selectedChar.greeting);
   speak(selectedChar.greeting);
 }
 
