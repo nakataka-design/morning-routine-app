@@ -582,19 +582,12 @@ function speak(text) {
   if (!window.speechSynthesis) return;
   try {
     speechSynthesis.cancel();
-    // iOS Safari対策：少し遅らせて実行
-    setTimeout(() => {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang   = 'ja-JP';
-      u.rate   = 1.0;
-      u.pitch  = 1.3;
-      u.volume = 1.0;
-      // 日本語音声を優先して選択
-      const voices = speechSynthesis.getVoices();
-      const jaVoice = voices.find(v => v.lang.startsWith('ja'));
-      if (jaVoice) u.voice = jaVoice;
-      speechSynthesis.speak(u);
-    }, 100);
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang   = 'ja-JP';
+    u.rate   = 1.0;
+    u.pitch  = 1.3;
+    u.volume = 1.0;
+    speechSynthesis.speak(u);
   } catch(e) {}
 }
 
