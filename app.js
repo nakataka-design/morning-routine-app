@@ -1131,6 +1131,20 @@ function onCharTap() {
 }
 
 // ─────────────────────────────────────────────
+// QRコード
+// ─────────────────────────────────────────────
+function openQR() {
+  const url   = 'https://morning-routine-app-vercel.vercel.app/';
+  const api   = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(url);
+  document.getElementById('qr-img').src = api;
+  document.getElementById('qr-overlay').classList.remove('hidden');
+}
+
+function closeQR() {
+  document.getElementById('qr-overlay').classList.add('hidden');
+}
+
+// ─────────────────────────────────────────────
 // 状態の永続化（localStorage）
 // ─────────────────────────────────────────────
 function saveState() {

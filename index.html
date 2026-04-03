@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
   <title>☀️ 朝ルーティン応援アプリ</title>
 </head>
 <body>
@@ -31,6 +31,7 @@
     <div id="hd-right">
       <div id="clock">00:00</div>
       <button id="bgm-btn" onclick="toggleBGM()" title="BGM">🔇 BGM</button>
+      <button id="qr-btn" onclick="openQR()" title="QRコード">📲</button>
       <button id="settings-btn" onclick="openPinScreen()" title="おや設定">⚙️</button>
     </div>
   </header>
@@ -179,6 +180,17 @@
     </div>
   </div>
 
+  <!-- QRコードモーダル -->
+  <div id="qr-overlay" class="hidden" onclick="closeQR()">
+    <div id="qr-box" onclick="event.stopPropagation()">
+      <div id="qr-title">📲 他のタブレットで開く</div>
+      <img id="qr-img" src="" alt="QRコード">
+      <div id="qr-url">https://morning-routine-app-vercel.vercel.app/</div>
+      <div id="qr-hint">カメラで読み取ってね！</div>
+      <button id="qr-close-btn" onclick="closeQR()">✕ とじる</button>
+    </div>
+  </div>
+
   <!-- キャラクター（浮遊） -->
   <div id="char-wrap">
     <div id="char-bubble" class="hidden">
@@ -187,6 +199,6 @@
     <div id="char-body" onclick="onCharTap()" title="くろみちゃん"></div>
   </div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

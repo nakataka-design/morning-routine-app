@@ -1,6 +1,6 @@
 /* Service Worker — オフライン対応 */
 
-const CACHE = 'morning-routine-v10';
+const CACHE = 'morning-routine-v11';
 const ASSETS = [
   './',
   './index.html',
