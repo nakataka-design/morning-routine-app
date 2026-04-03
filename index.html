@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
   <title>☀️ 朝ルーティン応援アプリ</title>
 </head>
 <body>
@@ -137,6 +137,17 @@
           <button onclick="changePin()">かえる</button>
         </div>
         <div id="pin-change-msg" class="hidden"></div>
+
+        <div class="s-section-label" style="margin-top:22px">🎭 キャラクター画像</div>
+        <div id="char-file-hint">画像・GIF・動画ファイルをせっていできます</div>
+        <div id="char-file-row">
+          <label id="char-file-label">
+            📁 ファイルをえらぶ
+            <input id="char-file-input" type="file" accept="image/*,video/*" onchange="onCharFileChange(event)">
+          </label>
+          <button id="char-reset-btn" onclick="resetCharFile()">🗑️ もとにもどす</button>
+        </div>
+        <div id="char-file-msg" class="hidden"></div>
       </div>
     </div>
   </div>
@@ -149,6 +160,6 @@
     <div id="char-body" onclick="onCharTap()" title="くろみちゃん"></div>
   </div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

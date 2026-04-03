@@ -149,10 +149,10 @@ function getActiveTasks() {
   return TASKS.filter(t => t.enabled !== false);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   loadTasks();
   loadState();
-  loadCharacter();
+  await loadCharacter();
   renderTasks();
   updateHeader();
   updateClock();
@@ -712,14 +712,116 @@ function showQuickMsg(el, msg) {
 // キャラクター
 // ─────────────────────────────────────────────
 
-function loadCharacter() {
+// ─────────────────────────────────────────────
+// キャラクターファイル（IndexedDB）
+// ─────────────────────────────────────────────
+function openCharDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('mrapp_char', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('files');
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveCharFile(file) {
+  const db = await openCharDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put(file, 'char');
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function loadCharFile() {
+  try {
+    const db = await openCharDB();
+    return new Promise(resolve => {
+      const req = db.transaction('files', 'readonly').objectStore('files').get('char');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function deleteCharFile() {
+  const db = await openCharDB();
+  return new Promise(resolve => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete('char');
+    tx.oncomplete = resolve;
+    tx.onerror = resolve;
+  });
+}
+
+function renderCharMedia(file) {
+  const url = URL.createObjectURL(file);
+  const charBody = document.getElementById('char-body');
+  charBody.innerHTML = '';
+  if (file.type.startsWith('video/')) {
+    const v = document.createElement('video');
+    v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
+    v.style.cssText = 'width:80px;height:112px;object-fit:contain;border-radius:8px';
+    v.src = url;
+    charBody.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'キャラ';
+    img.style.cssText = 'width:80px;height:112px;object-fit:contain';
+    charBody.appendChild(img);
+  }
+}
+
+async function applyCharFile() {
+  const file = await loadCharFile();
+  if (file) {
+    renderCharMedia(file);
+  } else {
+    document.getElementById('char-body').innerHTML = KUROMI_SVG;
+  }
+}
+
+async function onCharFileChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const maxBytes = file.type.startsWith('video/') ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    showCharFileMsg(file.type.startsWith('video/') ? '動画は50MBまでです' : '画像は10MBまでです', true);
+    return;
+  }
+  await saveCharFile(file);
+  renderCharMedia(file);
+  showCharFileMsg('キャラを変えました！✨');
+}
+
+async function resetCharFile() {
+  await deleteCharFile();
+  document.getElementById('char-body').innerHTML = KUROMI_SVG;
+  showCharFileMsg('くろみちゃんにもどしました！');
+}
+
+function showCharFileMsg(text, isError = false) {
+  const el = document.getElementById('char-file-msg');
+  if (!el) return;
+  el.textContent = text;
+  el.className = isError ? 'error' : '';
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+// ─────────────────────────────────────────────
+// キャラクター
+// ─────────────────────────────────────────────
+async function loadCharacter() {
   selectedChar = CHARACTER;
-  updateCharDisplay();
+  await applyCharFile();
   setTimeout(() => showCharBubble(selectedChar.greeting), 800);
 }
 
 function updateCharDisplay() {
-  document.getElementById('char-body').innerHTML = KUROMI_SVG;
+  applyCharFile();
 }
 
 function showCharBubble(text) {

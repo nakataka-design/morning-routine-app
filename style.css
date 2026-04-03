@@ -955,6 +955,66 @@ html, body {
 #pin-change-msg.error { color: #FF6B6B; }
 
 /* ───────────────────────────────────────
+   キャラクターファイル設定
+─────────────────────────────────────── */
+#char-file-hint {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+#char-file-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#char-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  color: #fff;
+  font-size: clamp(0.85rem, 2vw, 0.98rem);
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+  min-height: 44px;
+}
+#char-file-label:active { transform: scale(0.94); opacity: 0.85; }
+#char-file-input { display: none; }
+
+#char-reset-btn {
+  background: rgba(255,100,100,0.15);
+  border: 1px solid rgba(255,100,100,0.35);
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: #FF8080;
+  font-size: clamp(0.85rem, 2vw, 0.98rem);
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.14s ease;
+  min-height: 44px;
+}
+#char-reset-btn:active { background: rgba(255,100,100,0.3); transform: scale(0.94); }
+
+#char-file-msg {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #43E97B;
+}
+#char-file-msg.hidden { display: none; }
+#char-file-msg.error { color: #FF6B6B; }
+
+/* ───────────────────────────────────────
    キャラクター（浮遊）
 ─────────────────────────────────────── */
 #char-wrap {
