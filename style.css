@@ -1159,6 +1159,28 @@ html, body {
 }
 .voice-rec-status.has-clip { color: #43E97B; }
 
+/* 強制更新 */
+#app-update-hint {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  margin: 4px 0 10px;
+}
+#app-update-btn {
+  background: linear-gradient(135deg, #38F9D7, #43E97B);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: #1a1a2e;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 900;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: transform 0.14s ease;
+  min-height: 48px;
+}
+#app-update-btn:active { transform: scale(0.94); }
+#app-update-btn:disabled { opacity: 0.6; cursor: default; }
+
 /* ───────────────────────────────────────
    キャラクター（浮遊）
 ─────────────────────────────────────── */
