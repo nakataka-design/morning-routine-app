@@ -143,9 +143,18 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
-  // 最初のタップでオーディオをアンロック（iOS/Android対策）
-  document.addEventListener('touchstart', unlockAudio, { once: true });
-  document.addEventListener('pointerdown', unlockAudio, { once: true });
+  // 最初のタップでオーディオをアンロック＋BGM開始
+  function onFirstTouch() {
+    unlockAudio();
+    if (localStorage.getItem('mrapp_bgm') !== '0') {
+      setTimeout(() => {
+        startBGM();
+        document.getElementById('bgm-btn').textContent = '🎵 BGM';
+      }, 300);
+    }
+  }
+  document.addEventListener('touchstart', onFirstTouch, { once: true });
+  document.addEventListener('pointerdown', onFirstTouch, { once: true });
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -334,7 +343,8 @@ function completeCurrentTask() {
   const cheer = rand(cheerPool);
   showCheer(cheer);
   showCharBubble(cheer.text);
-  speak(cheer.text);
+  // 効果音が終わってから読み上げ（iOS干渉対策）
+  setTimeout(() => speak(cheer.text), 700);
 
   if (getActiveTasks().every(t => completed.has(t.id))) {
     setTimeout(showCompletion, 1900);
@@ -528,6 +538,69 @@ function unlockAudio() {
   src.connect(ctx.destination);
   src.start(0);
   ctx.resume();
+}
+
+// ─────────────────────────────────────────────
+// BGM（Web Audio APIで生成するループ音楽）
+// ─────────────────────────────────────────────
+let _bgmNodes = [];
+let _bgmPlaying = false;
+
+function startBGM() {
+  if (_bgmPlaying) return;
+  const ctx = getCtx();
+  if (!ctx) return;
+  _bgmPlaying = true;
+
+  // かわいいメロディ（ハ長調）
+  const melody = [
+    523.25, 587.33, 659.25, 698.46,
+    783.99, 698.46, 659.25, 587.33,
+    523.25, 659.25, 783.99, 1046.5,
+    880.00, 783.99, 698.46, 659.25,
+  ];
+  const beatLen = 0.4; // 1音の長さ（秒）
+  const loopLen = melody.length * beatLen;
+
+  function scheduleLoop(startTime) {
+    if (!_bgmPlaying) return;
+    melody.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = startTime + i * beatLen;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.06, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + beatLen * 0.9);
+      osc.start(t);
+      osc.stop(t + beatLen);
+      _bgmNodes.push(osc);
+    });
+    // 次のループをスケジュール
+    setTimeout(() => scheduleLoop(startTime + loopLen), (loopLen - 0.5) * 1000);
+  }
+
+  scheduleLoop(ctx.currentTime + 0.1);
+}
+
+function stopBGM() {
+  _bgmPlaying = false;
+  _bgmNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  _bgmNodes = [];
+}
+
+function toggleBGM() {
+  if (_bgmPlaying) {
+    stopBGM();
+    document.getElementById('bgm-btn').textContent = '🔇 BGM';
+    localStorage.setItem('mrapp_bgm', '0');
+  } else {
+    startBGM();
+    document.getElementById('bgm-btn').textContent = '🎵 BGM';
+    localStorage.setItem('mrapp_bgm', '1');
+  }
 }
 
 function playTones(notes) {
